@@ -1,0 +1,630 @@
+<!--
+Creado por Jonny Cardona AppScript/HTML/JS/CSS+IA
+-->
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Certificación 2026 - SENA CBI</title>
+
+<style>
+  :root {
+    --bg-dark: #001529;
+    --bg-light: #003a70;
+    --sena-green: #39A900;
+    --sena-green-hover: #2d8500;
+    --card-bg: #ffffff;
+    --text-main: #1a1a1a;
+    --text-muted: #555555;
+    --border-radius: 16px;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background-color: var(--bg-dark);
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(0, 255, 128, 0.08), transparent 30%),
+      radial-gradient(circle at 85% 30%, rgba(0, 200, 255, 0.15), transparent 30%),
+      radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 20px 20px;
+    background-attachment: fixed;
+    color: var(--text-main);
+    padding: 20px 10px;
+  }
+
+  .wrapper {
+    max-width: 750px;
+    margin: auto;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* HEADER */
+  .header-container {
+    text-align: center;
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .logo { width: 90px; }
+  .header-lema {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 10px;
+    font-weight: 700;
+    color: #00324D;
+    text-align: right;
+    line-height: 1.2;
+    border-left: 2px solid var(--sena-green);
+    padding-left: 8px;
+  }
+  h1 { font-size: 22px; color: #00324D; margin: 10px 0 5px; font-weight: 800; }
+  .subtitulo { font-size: 14px; color: var(--text-muted); font-weight: 600; }
+
+  /* VISOR DOCUMENTAL FLIPPAGE (5 HOJAS) */
+  .document-viewer-box {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .viewer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .viewer-title {
+    font-weight: 700;
+    color: #00324D;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .downloads-group {
+    display: flex;
+    gap: 6px;
+  }
+  .btn-descargar-doc {
+    background: #00324D;
+    color: white;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: 0.2s;
+  }
+  .btn-descargar-doc:hover { background: #002235; }
+  
+  .viewer-screen {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: zoom-in;
+  }
+  .viewer-screen img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+  }
+  .viewer-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+  }
+  .btn-page {
+    background: #e2e8f0;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #334155;
+    font-size: 13px;
+  }
+  .btn-page:hover:not(:disabled) { background: #cbd5e1; }
+  .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
+  .page-indicator { font-size: 13px; font-weight: 600; color: #475569; }
+
+  /* MODAL DE ZOOM PARA AMPLIAR IMAGEN */
+  .modal-zoom {
+    display: none;
+    position: fixed;
+    z-index: 999999;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 21, 41, 0.9);
+    justify-content: center; align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  .modal-zoom img {
+    max-width: 95vw;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+  }
+  .modal-cerrar-zoom {
+    position: absolute;
+    top: 20px; right: 25px;
+    color: white; font-size: 35px; font-weight: bold; cursor: pointer;
+  }
+
+  /* CAJAS DE INFORMACIÓN Y LEGAL */
+  .info-box {
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .info-box.light { background: #f1f5f9; border: 1px solid #e2e8f0; }
+  .custom-checkbox {
+    appearance: none;
+    width: 20px; height: 20px;
+    border: 2px solid #94a3b8;
+    border-radius: 6px;
+    outline: none; cursor: pointer;
+    position: relative;
+    transition: 0.2s;
+    flex-shrink: 0;
+  }
+  .custom-checkbox:checked { background: var(--sena-green); border-color: var(--sena-green); }
+  .custom-checkbox:checked::after {
+    content: '✔'; position: absolute; color: white;
+    font-size: 14px; top: -1px; left: 3px; font-weight: bold;
+  }
+
+  /* INDICADOR DE PASO */
+  .step-indicator {
+    background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 12px;
+    padding: 12px 15px; display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .step-left { display: flex; align-items: center; gap: 10px; }
+  .step-circle {
+    width: 28px; height: 28px; background: var(--sena-green); color: white;
+    border-radius: 50%; display: flex; justify-content: center; align-items: center;
+    font-weight: bold; font-size: 15px;
+  }
+  .step-title { font-weight: 700; color: #1b5e20; font-size: 14px; }
+
+  /* FORMULARIO Y INPUTS */
+  .section-title {
+    display: flex; align-items: center; gap: 8px; font-weight: 700;
+    color: #00324D; margin: 20px 0 10px; font-size: 15px;
+  }
+  .section-title svg { width: 18px; height: 18px; fill: var(--sena-green); }
+  
+  .row { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;}
+  .col { flex: 1 1 250px; position: relative; }
+  
+  .input-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    width: 18px; height: 18px; fill: #788b9c;
+  }
+  
+  .col input {
+    width: 100%; padding: 12px 12px 12px 38px; border-radius: 10px;
+    border: 1px solid #cfd8dc; font-size: 14px; box-sizing: border-box;
+    transition: 0.3s; color: #333; font-weight: 500;
+  }
+  .col input:focus { border-color: var(--sena-green); outline: none; box-shadow: 0 0 0 3px rgba(57,169,0,0.1); }
+
+  /* PESTAÑAS PARA TIPO DE FIRMA */
+  .firma-tabs { display: flex; gap: 10px; margin-bottom: 10px; }
+  .tab-btn { flex: 1; padding: 8px; background: #e2e8f0; border: none; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; color: #475569; }
+  .tab-btn.active { background: #00324D; color: white; }
+
+  /* CANVAS DE FIRMA */
+  .canvas-wrapper {
+    position: relative; border: 2px dashed #90a4ae; border-radius: 12px; background: #f8fafc; overflow: hidden; touch-action: none;
+  }
+  canvas { width: 100%; height: 200px; display: block; cursor: crosshair; }
+  .canvas-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #90a4ae; pointer-events: none; }
+  .btn-ampliar { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border: 1px solid #ccc; border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: bold; color: #333; cursor: pointer; }
+
+  .upload-box { display: none; border: 2px dashed #90a4ae; border-radius: 12px; background: #f8fafc; padding: 40px 20px; text-align: center; }
+  .upload-box input { display: none; }
+  .upload-label { background: #00324D; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: inline-block; }
+
+  .fullscreen-mode {
+    position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; background: rgba(0, 21, 41, 0.95); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; border: none; border-radius: 0; padding: 15px; box-sizing: border-box;
+  }
+  .fullscreen-mode canvas { background: white; border-radius: 12px; max-height: 80vh; border: 2px solid var(--sena-green); }
+  .btn-cerrar-fullscreen { display: none; margin-top: 20px; padding: 12px 30px; font-size: 16px; background: var(--sena-green); color: white; font-weight: bold; border: none; border-radius: 8px; }
+  .fullscreen-mode .btn-cerrar-fullscreen { display: block; }
+  .fullscreen-mode .btn-ampliar { display: none; }
+
+  /* BOTONES */
+  .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+  .btn {
+    width: 100%; padding: 14px; border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700; cursor: pointer; display: flex;
+    justify-content: center; align-items: center; gap: 8px; transition: 0.3s;
+    text-decoration: none; box-sizing: border-box;
+  }
+  .btn-limpiar { background: #e2e8f0; color: #475569; }
+  .btn-guardar { background: var(--sena-green); color: white; }
+  .btn-guardar:hover { background: var(--sena-green-hover); }
+
+  /* BOTÓN TITILANTE DE TRANSICIÓN AL FORMULARIO DE CERTIFICACIÓN */
+  @keyframes pulse-titilar {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(57, 169, 0, 0.8); }
+    50% { transform: scale(1.02); box-shadow: 0 0 0 15px rgba(57, 169, 0, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(57, 169, 0, 0); }
+  }
+  .btn-titilante {
+    animation: pulse-titilar 1.8s infinite ease-in-out;
+    background: var(--sena-green) !important;
+    color: white !important;
+    font-size: 15px;
+    margin-top: 20px;
+    border: 2px solid #ffffff;
+    text-align: center;
+  }
+
+  .hide { display: none !important; }
+  #msg { margin-top: 15px; font-weight: 700; text-align: center; color: #c62828; white-space: pre-line; }
+  .footer-legal {
+    margin-top: 25px; font-size: 11px; color: #788b9c; text-align: center;
+    display: flex; align-items: center; justify-content: center; gap: 8px; line-height: 1.4;
+  }
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+  <div class="card" id="tarjetaPrincipal">
+    
+    <!-- HEADER -->
+    <div class="header-container">
+      <img class="logo" src="https://articulacioncbi.com.co/logoSena.png" alt="SENA" />
+      <div class="header-lema">MÁS<br>TALENTO<br>PARA UN<br>MEJOR PAÍS</div>
+      <h1>Certificación IE 2026</h1>
+      <div class="subtitulo">Articulación con la Media – Palmira CBI</div>
+    </div>
+
+    <!-- VISOR DE DOCUMENTO FLIPPAGE (5 HOJAS) -->
+    <div class="document-viewer-box" id="visorDocumentoContainer">
+      <div class="viewer-header">
+        <div class="viewer-title">📄 Visualización del Documento</div>
+        <div class="downloads-group">
+          <a href="#" id="btnDescargarPDF" class="btn-descargar-doc" download target="_blank">⬇ PDF</a>
+          <a href="#" id="btnDescargarDocx" class="btn-descargar-doc" download target="_blank">⬇ .docx</a>
+        </div>
+      </div>
+      <div class="viewer-screen" onclick="abrirZoom()">
+        <img id="imgPaginaDoc" src="https://articulacioncbi.com.co/docs/pagina1.jpg" alt="Página del documento" title="Clic para ampliar imagen" />
+      </div>
+      <div class="viewer-controls">
+        <button class="btn-page" id="btnAnterior" onclick="cambiarPagina(-1)">◀ Anterior</button>
+        <span class="page-indicator" id="indicadorPagina">Página 1 de 5</span>
+        <button class="btn-page" id="btnSiguiente" onclick="cambiarPagina(1)">Siguiente ▶</button>
+      </div>
+    </div>
+
+    <!-- MODAL DE ZOOM PARA AMPLIAR IMAGEN -->
+    <div id="modalZoom" class="modal-zoom" onclick="cerrarZoom()">
+      <span class="modal-cerrar-zoom">&times;</span>
+      <img id="imgZoomModal" src="" alt="Vista ampliada" />
+    </div>
+
+    <!-- CONSENTIMIENTO LEGAL UNICO -->
+    <div class="info-box light" id="cajaConsentimiento">
+      <label class="check-item" style="width: 100%; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+        <input type="checkbox" id="checkAutorizacionLegal" class="custom-checkbox">
+        <span style="color: #00324D; font-weight: 500;">
+          Entiendo que el trámite requerido para firmar corresponde al documento visualizado, y <b>autorizo el uso de mi firma digital</b> con el único propósito de formalizar este proceso de documentación institucional. Esta autorización aplica para aprendices, acudientes y demás actores institucionales involucrados.
+        </span>
+      </label>
+    </div>
+
+    <!-- INDICADOR DE PASO -->
+    <div class="step-indicator" id="indicadorPasoBox">
+      <div class="step-left">
+        <div class="step-circle" id="stepNum">1</div>
+        <div class="step-title" id="pasoTexto">Firma del Aprendiz</div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN DE DATOS Y FIRMA (BLOQUEABLE) -->
+    <div id="seccionFormularioFirma">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        Diligenciar Datos
+      </div>
+      <div class="row">
+        <div class="col">
+          <svg class="input-icon" viewBox="0 0 24 24"><path d="M12 12c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg>
+          <input type="text" id="apellidos" placeholder="Apellidos" autocomplete="off" />
+        </div>
+        <div class="col">
+          <svg class="input-icon" viewBox="0 0 24 24"><path d="M12 12c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4zm0 2c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg>
+          <input type="text" id="nombres" placeholder="Nombres" autocomplete="off" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <svg class="input-icon" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14H5v-2h7v2zm3-4H5v-2h10v2zm0-4H5V7h10v2z"/></svg>
+          <input type="number" id="documento" placeholder="Documento" autocomplete="off" />
+        </div>
+        <div class="col" id="colCorreoAprendiz">
+          <svg class="input-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          <input type="email" id="correoAprendiz" placeholder="Correo electrónico" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="section-title">
+        <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        Firma Digital
+      </div>
+
+      <div class="firma-tabs">
+        <button class="tab-btn active" id="tabDibujar" onclick="cambiarModoFirma('dibujar')">✍ Dibujar Firma</button>
+        <button class="tab-btn" id="tabSubir" onclick="cambiarModoFirma('subir')">📁 Cargar Imagen de Firma</button>
+      </div>
+      
+      <div class="canvas-wrapper" id="canvasContainer">
+        <canvas id="canvas"></canvas>
+        <div class="canvas-placeholder" id="placeholderCanvas"><span>Dibuja tu firma aquí</span></div>
+        <button type="button" class="btn-ampliar" onclick="toggleFullscreen()">Ampliar lienzo</button>
+        <button type="button" class="btn-cerrar-fullscreen" onclick="toggleFullscreen()">✔ Listo</button>
+      </div>
+
+      <div class="upload-box" id="uploadBox">
+        <p style="font-size: 13px; color: #555; margin-bottom: 10px;">Selecciona tu archivo de firma (PNG o JPG):</p>
+        <label class="upload-label">
+          📂 Buscar Archivo
+          <input type="file" id="inputFileFirma" accept="image/png, image/jpeg" onchange="cargarArchivoFirma(event)" />
+        </label>
+        <p id="nombreArchivoCargado" style="font-size: 12px; color: var(--sena-green); font-weight: bold; margin-top: 10px;"></p>
+      </div>
+
+      <div class="btn-group" id="botonesAccion">
+        <button class="btn btn-limpiar" type="button" onclick="limpiarFirma()">Limpiar / Restablecer</button>
+        <button class="btn btn-guardar" type="button" onclick="guardarYContinuar()" id="btnGuardar">Guardar y Enviar Autorización ➜</button>
+      </div>
+    </div>
+
+    <!-- BOTÓN TITILANTE DE TRANSICIÓN AL FORMULARIO DE CERTIFICACIÓN -->
+    <a href="#" id="btnFormularioCertificacion" class="btn btn-titilante hide" target="_blank">
+      🚀 Si eres aprendiz, diligencia tus datos para el proceso de certificación 2026
+    </a>
+
+    <div id="msg"></div>
+
+    <div class="footer-legal">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#788b9c"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+      Al continuar autorizo el tratamiento de mis datos personales según la Ley 1581 de 2012.
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const URL_GOOGLE = "BORRAR ESTO Y PEGAR URL WEB CREADA EN DRIVE FIRMA";
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const TOKEN = urlParams.get('token') || "";
+  let modoToken = false;
+
+  const totalPaginas = 5;
+  let paginaActual = 1;
+  const paginasDocumento = [
+    "https://articulacioncbi.com.co/docs/pagina1.jpg",
+    "https://articulacioncbi.com.co/docs/pagina2.jpg",
+    "https://articulacioncbi.com.co/docs/pagina3.jpg",
+    "https://articulacioncbi.com.co/docs/pagina4.jpg",
+    "https://articulacioncbi.com.co/docs/pagina5.jpg"
+  ];
+  const linkDescargaPDF = "https://articulacioncbi.com.co/docs/GFPI-F-023_V06.__Formato_Bl.pdf";
+  const linkDescargaDocx = "https://articulacioncbi.com.co/docs/GFPI-F-023_V06.__Formato_Bl.docx";
+
+  function actualizarVisor() {
+    document.getElementById("imgPaginaDoc").src = paginasDocumento[paginaActual - 1];
+    document.getElementById("indicadorPagina").innerText = `Página ${paginaActual} de ${totalPaginas}`;
+    document.getElementById("btnAnterior").disabled = (paginaActual === 1);
+    document.getElementById("btnSiguiente").disabled = (paginaActual === totalPaginas);
+    document.getElementById("btnDescargarPDF").href = linkDescargaPDF;
+    document.getElementById("btnDescargarDocx").href = linkDescargaDocx;
+  }
+
+  function cambiarPagina(direccion) {
+    paginaActual += direccion;
+    if (paginaActual < 1) paginaActual = 1;
+    if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+    actualizarVisor();
+  }
+
+  function abrirZoom() {
+    const modal = document.getElementById("modalZoom");
+    const imgModal = document.getElementById("imgZoomModal");
+    imgModal.src = paginasDocumento[paginaActual - 1];
+    modal.style.display = "flex";
+  }
+
+  function cerrarZoom() {
+    document.getElementById("modalZoom").style.display = "none";
+  }
+
+  window.addEventListener("load", () => {
+    actualizarVisor();
+    if (TOKEN) {
+      modoToken = true;
+      document.getElementById("stepNum").innerText = "2";
+      document.getElementById("pasoTexto").textContent = "Firma del Acudiente (Enlace seguro)";
+    }
+  });
+
+  let tipoFirmaActual = "dibujar";
+  let base64ArchivoSubido = "";
+
+  function cambiarModoFirma(modo) {
+    tipoFirmaActual = modo;
+    if (modo === 'dibujar') {
+      document.getElementById("tabDibujar").classList.add("active");
+      document.getElementById("tabSubir").classList.remove("active");
+      document.getElementById("canvasContainer").classList.remove("hide");
+      document.getElementById("uploadBox").style.display = "none";
+    } else {
+      document.getElementById("tabSubir").classList.add("active");
+      document.getElementById("tabDibujar").classList.remove("active");
+      document.getElementById("canvasContainer").classList.add("hide");
+      document.getElementById("uploadBox").style.display = "block";
+    }
+  }
+
+  function cargarArchivoFirma(event) {
+    const file = event.target.files[0];
+    if (file) {
+      document.getElementById("nombreArchivoCargado").innerText = "✔ Archivo cargado: " + file.name;
+      const reader = new FileReader();
+      reader.onload = function(e) { base64ArchivoSubido = e.target.result; };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = 800;
+  canvas.height = 300;
+  ctx.lineWidth = 4; ctx.lineCap = "round"; ctx.strokeStyle = "#001529";
+
+  function pos(evt){
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const cx = (evt.touches ? evt.touches[0].clientX : evt.clientX) - rect.left;
+    const cy = (evt.touches ? evt.touches[0].clientY : evt.clientY) - rect.top;
+    return { x: cx * scaleX, y: cy * scaleY };
+  }
+
+  let drawing = false;
+  function startDraw(e) { drawing = true; ctx.beginPath(); const p = pos(e); ctx.moveTo(p.x, p.y); document.getElementById("placeholderCanvas").style.display = "none"; }
+  function moveDraw(e) { if (!drawing) return; e.preventDefault(); const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }
+  function stopDraw() { drawing = false; }
+
+  canvas.addEventListener("mousedown", startDraw);
+  canvas.addEventListener("mousemove", moveDraw);
+  canvas.addEventListener("mouseup", stopDraw);
+  canvas.addEventListener("mouseleave", stopDraw);
+  canvas.addEventListener("touchstart", startDraw, {passive: false});
+  canvas.addEventListener("touchmove", moveDraw, {passive: false});
+  canvas.addEventListener("touchend", stopDraw);
+
+  function limpiarFirma(){ 
+    ctx.clearRect(0, 0, canvas.width, canvas.height); 
+    document.getElementById("placeholderCanvas").style.display = "block";
+    base64ArchivoSubido = "";
+    document.getElementById("nombreArchivoCargado").innerText = "";
+    document.getElementById("inputFileFirma").value = "";
+    setMsg(""); 
+  }
+  
+  function canvasVacio(){ return !ctx.getImageData(0, 0, canvas.width, canvas.height).data.some(c => c !== 0); }
+  function setMsg(t){ document.getElementById("msg").innerText = t; }
+
+  function toggleFullscreen() {
+    document.getElementById("canvasContainer").classList.toggle("fullscreen-mode");
+  }
+
+  async function enviarAGoogle(datos) {
+    document.getElementById("btnGuardar").disabled = true;
+    document.getElementById("btnGuardar").style.opacity = "0.7";
+    try {
+      const respuesta = await fetch(URL_GOOGLE, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(datos)
+      });
+      const json = await respuesta.json();
+      document.getElementById("btnGuardar").disabled = false;
+      document.getElementById("btnGuardar").style.opacity = "1";
+      return json;
+    } catch (e) {
+      document.getElementById("btnGuardar").disabled = false;
+      document.getElementById("btnGuardar").style.opacity = "1";
+      return { ok: false, error: "Error de conexión. Intente de nuevo." };
+    }
+  }
+
+  async function guardarYContinuar(){
+    if(!document.getElementById("checkAutorizacionLegal").checked) {
+      return setMsg("⚠️ Debe marcar la casilla de autorización legal y tratamiento de datos para continuar.");
+    }
+
+    const apellidos = document.getElementById("apellidos").value.trim();
+    const nombres = document.getElementById("nombres").value.trim();
+    const documento = document.getElementById("documento").value.trim();
+    const correo = document.getElementById("correoAprendiz").value.trim();
+
+    if (!apellidos || !nombres || !documento || !correo) {
+      return setMsg("⚠️ Por favor complete todos los campos de datos requeridos.");
+    }
+
+    let dataUrl = "";
+    if (tipoFirmaActual === 'dibujar') {
+      if (canvasVacio()) return setMsg("⚠️ Debe dibujar su firma en el recuadro.");
+      dataUrl = canvas.toDataURL("image/png");
+    } else {
+      if (!base64ArchivoSubido) return setMsg("⚠️ Debe cargar una imagen de firma válida (PNG o JPG).");
+      dataUrl = base64ArchivoSubido;
+    }
+
+    setMsg("⏳ Procesando firma y generando trazabilidad...");
+
+    const actionName = modoToken ? "guardarFirmaAcudiente" : "guardarFirmaAprendiz";
+    const payload = modoToken ? 
+      { action: actionName, token: TOKEN, dataUrl, apellidos, nombres, documento } :
+      { action: actionName, dataUrl, apellidos, nombres, documento, correo };
+
+    const res = await enviarAGoogle(payload);
+    if(res.ok){
+      setMsg("✅ FIRMA Y AUTORIZACIÓN REGISTRADAS CON ÉXITO.");
+      
+      document.getElementById("seccionFormularioFirma").classList.add("hide");
+      document.getElementById("cajaConsentimiento").classList.add("hide");
+      document.getElementById("indicadorPasoBox").classList.add("hide");
+
+      const btnCert = document.getElementById("btnFormularioCertificacion");
+      btnCert.href = res.linkFormulario || "#";
+      btnCert.classList.remove("hide");
+    } else {
+      setMsg("❌ Error: " + res.error);
+    }
+  }
+</script>
+</body>
+</html>
